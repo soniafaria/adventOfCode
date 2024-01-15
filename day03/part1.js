@@ -14,10 +14,15 @@ function stringHasSymbols(string) {
   );
 }
 
-function calculatePosition(number, index) {
+function calculatePosition(number, line, previousNumberEndPosition) {
+  //get index of number in current line, but search only from last number end position
+  const index = line.indexOf(number, previousNumberEndPosition);
+
+  //get starting and ending positions of surrondings
   let startPosition = index - 1;
   let endPosition = index + number.length + 1;
 
+  //prevent cases where surrondings doesn't exist (right or left)
   startPosition = startPosition < 0 ? 0 : startPosition;
   endPosition = endPosition > lineLength ? lineLength : endPosition;
 
@@ -30,30 +35,25 @@ lines.forEach((currentLine, lineIndex) => {
   const numbersInCurrentLine = currentLine.match(numberRegex);
 
   if (numbersInCurrentLine) {
+    let previousNumberEndPosition = 0;
+
     numbersInCurrentLine.forEach((number) => {
       let surronding = "";
-      let isEligible = false;
       const { startPosition, endPosition } = calculatePosition(
         number,
-        currentLine.indexOf(number)
+        currentLine,
+        previousNumberEndPosition
       );
 
-      surronding += topLine?.substring(startPosition, endPosition);
+      previousNumberEndPosition = endPosition;
+
+      surronding += topLine?.substring(startPosition, endPosition) ?? "";
       surronding += currentLine.substring(startPosition, endPosition);
-      surronding += bottomLine?.substring(startPosition, endPosition);
+      surronding += bottomLine?.substring(startPosition, endPosition) ?? "";
 
       if (stringHasSymbols(surronding)) {
         sum += parseInt(number);
-        isEligible = true;
       }
-
-      console.log(
-        `Line: ${
-          lineIndex + 1
-        } Eligible: ${isEligible} Number: ${number} StartPosition: ${
-          startPosition + 1
-        } EndPosition: ${endPosition + 1}`
-      );
     });
   }
 });
